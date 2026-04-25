@@ -5,7 +5,7 @@ namespace App\Models\Task\Contract;
 use App\Models\Task\Enum\TaskType;
 use App\Models\Task\Task;
 
-interface TaskRepositoryInterface
+interface TaskDatabaseRepositoryInterface
 {
     public function save(Task $task): void;
 

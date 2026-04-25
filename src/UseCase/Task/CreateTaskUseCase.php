@@ -2,7 +2,7 @@
 
 namespace App\UseCase\Task;
 
-use App\Models\Task\Contract\TaskRepositoryInterface;
+use App\Models\Task\Contract\TaskDatabaseRepositoryInterface;
 use App\Models\Task\Exception\ActiveTaskAlreadyExistsException;
 use App\Models\Task\Task;
 use App\UseCase\Task\Input\CreateTaskInputDTO;
@@ -11,8 +11,8 @@ use Doctrine\ORM\EntityManagerInterface;
 class CreateTaskUseCase
 {
     public function __construct(
-        private TaskRepositoryInterface $repository,
-        private EntityManagerInterface $em,
+        private TaskDatabaseRepositoryInterface $repository,
+        private EntityManagerInterface          $em,
     ) {}
 
     public function execute(CreateTaskInputDTO $input): Task

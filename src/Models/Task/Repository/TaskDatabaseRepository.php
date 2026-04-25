@@ -2,14 +2,14 @@
 
 namespace App\Models\Task\Repository;
 
-use App\Models\Task\Contract\TaskRepositoryInterface;
+use App\Models\Task\Contract\TaskDatabaseRepositoryInterface;
 use App\Models\Task\Enum\TaskStatus;
 use App\Models\Task\Enum\TaskType;
 use App\Models\Task\Task;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-class TaskRepository extends ServiceEntityRepository implements TaskRepositoryInterface
+class TaskDatabaseRepository extends ServiceEntityRepository implements TaskDatabaseRepositoryInterface
 {
     public function __construct(ManagerRegistry $registry)
     {
