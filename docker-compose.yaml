@@ -1,0 +1,56 @@
+version: '3.9'
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "${NGINX_PORT:-8080}:80"
+    volumes:
+      - ./app:/var/www/html
+      - ./deployment/local/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+    networks:
+      - app-network
+
+  php:
+    build:
+      context: ./
+      dockerfile: ./deployment/local/php/Dockerfile
+    container_name: php
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app-network
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_DB: app_db
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "${REDIS_PORT}:6379"
+    networks:
+      - app-network
+
+volumes:
+  pgdata:
+
+networks:
+  app-network:
