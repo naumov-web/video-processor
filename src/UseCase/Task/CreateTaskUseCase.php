@@ -3,7 +3,10 @@
 namespace App\UseCase\Task;
 
 use App\Models\Task\Contract\TaskDatabaseRepositoryInterface;
+use App\Models\Task\Enum\OutboxEventType;
 use App\Models\Task\Exception\ActiveTaskAlreadyExistsException;
+use App\Models\Task\OutboxEvent;
+use App\Models\Task\Repository\OutboxEventDatabaseRepository;
 use App\Models\Task\Task;
 use App\UseCase\Task\Input\CreateTaskInputDTO;
 use Doctrine\ORM\EntityManagerInterface;
@@ -11,13 +14,14 @@ use Doctrine\ORM\EntityManagerInterface;
 class CreateTaskUseCase
 {
     public function __construct(
-        private TaskDatabaseRepositoryInterface $repository,
-        private EntityManagerInterface          $em,
+        private TaskDatabaseRepositoryInterface $taskDatabaseRepository,
+        private OutboxEventDatabaseRepository $outboxEventDatabaseRepository,
+        private EntityManagerInterface $em,
     ) {}
 
     public function execute(CreateTaskInputDTO $input): Task
     {
-        if ($this->repository->existsActiveTaskForVideo($input->videoId, $input->type)) {
+        if ($this->taskDatabaseRepository->existsActiveTaskForVideo($input->videoId, $input->type)) {
             throw new ActiveTaskAlreadyExistsException('Active task already exists for this video');
         }
 
@@ -31,7 +35,15 @@ class CreateTaskUseCase
         $this->em->beginTransaction();
 
         try {
-            $this->repository->save($task);
+            $this->taskDatabaseRepository->save($task);
+            $event = new OutboxEvent(
+                eventType: OutboxEventType::taskCreated->value,
+                aggregateId: $task->getId(),
+                payload: [
+                    'task_id' => $task->getId(),
+                ]
+            );
+            $this->outboxEventDatabaseRepository->save($event);
             $this->em->commit();
 
             return $task;
