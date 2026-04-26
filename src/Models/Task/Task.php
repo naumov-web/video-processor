@@ -107,9 +107,9 @@ class Task
         return $this->videoId;
     }
 
-    public function getTypeValue(): string
+    public function getType(): TaskType
     {
-        return $this->type->value;
+        return $this->type;
     }
 
     public function getStatus(): TaskStatus
@@ -130,5 +130,10 @@ class Task
     public function getStartedAt(): ?\DateTimeImmutable
     {
         return $this->startedAt;
+    }
+
+    public function getPriority(): int
+    {
+        return $this->priority;
     }
 }

@@ -3,9 +3,13 @@
 namespace App\Controller\Api;
 
 use App\Models\Task\Enum\TaskType;
-use App\Models\Task\Validator\CreateVideoTaskValidator;
+use App\Models\Task\Task;
+use App\Models\Task\Validator\CreateTaskValidator;
+use App\Models\Task\Validator\GetTasksValidator;
 use App\UseCase\Task\CreateTaskUseCase;
+use App\UseCase\Task\GetTasksUseCase;
 use App\UseCase\Task\Input\CreateTaskInputDTO;
+use App\UseCase\Task\Input\GetTasksInputDTO;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,7 +21,9 @@ class TasksController
 {
     public function __construct(
         private CreateTaskUseCase $createTaskUseCase,
-        private CreateVideoTaskValidator $createVideoTaskValidator,
+        private GetTasksUseCase $getTasksUseCase,
+        private CreateTaskValidator $createTaskValidator,
+        private GetTasksValidator $getTasksValidator,
     ) {}
 
     #[Route('/api/tasks', methods: ['POST'])]
@@ -63,7 +69,7 @@ class TasksController
     public function create(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-        $this->createVideoTaskValidator->validate($data);
+        $this->createTaskValidator->validate($data);
         $input = new CreateTaskInputDTO(
             videoId: $data['videoId'],
             type: TaskType::from($data['type']),
@@ -80,5 +86,41 @@ class TasksController
             ],
             Response::HTTP_CREATED
         );
+    }
+
+    #[Route('/api/tasks', methods: ['GET'])]
+    public function index(Request $request): JsonResponse
+    {
+        $data = [
+            'limit' => $request->query->getInt('limit'),
+            'offset' => $request->query->getInt('offset'),
+            'sortBy' => $request->query->get('sortBy'),
+            'direction' => $request->query->get('direction'),
+            'status' => $request->query->get('status'),
+            'type' => $request->query->get('type'),
+        ];
+        $this->getTasksValidator->validate($data);
+        $input = new GetTasksInputDTO(
+            offset: $data['offset'] ?? null,
+            limit: $data['limit'] ?? null,
+            sortBy: $data['sortBy'] ?? null,
+            direction: $data['direction'] ?? null,
+            status: $data['status'] ?? null,
+            type: $data['type'] ?? null,
+        );
+        $paginatedResult = $this->getTasksUseCase->execute($input);
+
+        return new JsonResponse([
+            'items' => array_map(
+                fn(Task $task) => [
+                    'id' => $task->getId(),
+                    'videoId' => $task->getVideoId(),
+                    'type' => $task->getType()->value,
+                    'status' => $task->getStatus()->value,
+                    'priority' => $task->getPriority(),
+                    'createdAt' => $task->getCreatedAt()->format(DATE_ATOM),
+                ], $paginatedResult->items->toArray()),
+            'total' => $paginatedResult->total,
+        ]);
     }
 }
