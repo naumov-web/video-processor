@@ -102,8 +102,33 @@ class Task
         return $this->id;
     }
 
+    public function getVideoId(): int
+    {
+        return $this->videoId;
+    }
+
+    public function getTypeValue(): string
+    {
+        return $this->type->value;
+    }
+
     public function getStatus(): TaskStatus
     {
         return $this->status;
+    }
+
+    public function getStatusValue(): string
+    {
+        return $this->status->value;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getStartedAt(): ?\DateTimeImmutable
+    {
+        return $this->startedAt;
     }
 }

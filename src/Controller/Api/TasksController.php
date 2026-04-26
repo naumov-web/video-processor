@@ -1,18 +1,16 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\Api;
 
-use App\Exception\ValidationException;
 use App\Models\Task\Enum\TaskType;
 use App\Models\Task\Validator\CreateVideoTaskValidator;
 use App\UseCase\Task\CreateTaskUseCase;
 use App\UseCase\Task\Input\CreateTaskInputDTO;
+use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use OpenApi\Attributes as OA;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 
 class TasksController

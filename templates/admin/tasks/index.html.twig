@@ -1,0 +1,129 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block body %}
+    <h1 class="mb-4">Tasks</h1>
+
+    <form method="get" class="row g-2 mb-3">
+
+        <div class="col-auto">
+            <select name="status" class="form-select">
+                <option value="">All statuses</option>
+                <option value="pending" {{ status == 'pending' ? 'selected' }}>Pending</option>
+                <option value="processing" {{ status == 'processing' ? 'selected' }}>Processing</option>
+                <option value="done" {{ status == 'done' ? 'selected' }}>Done</option>
+            </select>
+        </div>
+
+        <div class="col-auto">
+            <select name="type" class="form-select">
+                <option value="">All types</option>
+                <option value="transcoding" {{ type == 'transcoding' ? 'selected' }}>Transcoding</option>
+                <option value="thumbnail_generation" {{ type == 'thumbnail_generation' ? 'selected' }}>Thumbnail</option>
+                <option value="ai_tagging" {{ type == 'ai_tagging' ? 'selected' }}>AI Tagging</option>
+            </select>
+        </div>
+
+        <div class="col-auto">
+            <button class="btn btn-primary">Filter</button>
+        </div>
+
+    </form>
+
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>
+                    {% include 'admin/partials/_sortable_header.html.twig' with {
+                        field: 'id',
+                        label: 'ID',
+                        route: 'admin_tasks',
+                        query: { page: page, status: status, type: type },
+                        currentSort: sort,
+                        currentDirection: direction
+                    } %}
+                </th>
+                <th>
+                    {% include 'admin/partials/_sortable_header.html.twig' with {
+                        field: 'videoId',
+                        label: 'Video Id',
+                        route: 'admin_tasks',
+                        query: { page: page, status: status, type: type },
+                        currentSort: sort,
+                        currentDirection: direction
+                    } %}
+                </th>
+                <th>
+                    {% include 'admin/partials/_sortable_header.html.twig' with {
+                        field: 'type',
+                        label: 'Type',
+                        route: 'admin_tasks',
+                        query: { page: page, status: status, type: type },
+                        currentSort: sort,
+                        currentDirection: direction
+                    } %}
+                </th>
+                <th>
+                    {% include 'admin/partials/_sortable_header.html.twig' with {
+                        field: 'status',
+                        label: 'Status',
+                        route: 'admin_tasks',
+                        query: { page: page, status: status, type: type },
+                        currentSort: sort,
+                        currentDirection: direction
+                    } %}
+                </th>
+                <th>
+                    {% include 'admin/partials/_sortable_header.html.twig' with {
+                        field: 'createdAt',
+                        label: 'Created',
+                        route: 'admin_tasks',
+                        query: { page: page, status: status, type: type },
+                        currentSort: sort,
+                        currentDirection: direction
+                    } %}
+                </th>
+                <th>
+                    {% include 'admin/partials/_sortable_header.html.twig' with {
+                        field: 'startedAt',
+                        label: 'Started',
+                        route: 'admin_tasks',
+                        query: { page: page, status: status, type: type },
+                        currentSort: sort,
+                        currentDirection: direction
+                    } %}
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+                <tr>
+                    <td>{{ task.id }}</td>
+                    <td>{{ task.videoId }}</td>
+                    <td>{{ task.typeValue }}</td>
+                    <td>{{ task.statusValue }}</td>
+                    <td>{{ task.createdAt|date('Y-m-d H:i:s') }}</td>
+                    <td>{{ task.startedAt ? task.startedAt|date('Y-m-d H:i') : '-' }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" class="text-center">No tasks found</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% include 'admin/partials/_pagination.html.twig' with {
+        page: page,
+        pages: pages,
+        route: 'admin_tasks',
+        query: {
+            sort: sort,
+            direction: direction,
+            status: status,
+            type: type
+        },
+        limit: limit,
+    } %}
+{% endblock %}

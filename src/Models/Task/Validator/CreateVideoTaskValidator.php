@@ -22,7 +22,7 @@ class CreateVideoTaskValidator
             'type' => [
                 new Assert\NotBlank(),
                 new Assert\Choice([
-                    'choices' => ['transcode', 'thumbnail', 'ai_tagging'],
+                    'choices' => ['transcoding', 'thumbnail_generation', 'ai_tagging'],
                 ]),
             ],
             'inputData' => [
