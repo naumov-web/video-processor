@@ -2,7 +2,9 @@
 
 namespace App\Models\Task\Contract;
 
+use App\Models\Common\DTO\PaginatedResultDTO;
 use App\Models\Task\Enum\TaskType;
+use App\Models\Task\Filter\TaskFilter;
 use App\Models\Task\Task;
 
 interface TaskDatabaseRepositoryInterface
@@ -16,4 +18,6 @@ interface TaskDatabaseRepositoryInterface
     public function findRetryableTasks(int $limit = 10): array;
 
     public function existsActiveTaskForVideo(int $videoId, TaskType $type): bool;
+
+    public function findPaginated(TaskFilter $filter): PaginatedResultDTO;
 }

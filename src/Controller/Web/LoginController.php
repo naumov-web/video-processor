@@ -17,4 +17,10 @@ class LoginController extends AbstractController
             'error' => $authenticationUtils->getLastAuthenticationError(),
         ]);
     }
+
+    #[Route('/logout', name: 'app_logout')]
+    public function logout(): void
+    {
+        throw new \LogicException('This method is blank - it will be intercepted by the logout key on your firewall.');
+    }
 }
