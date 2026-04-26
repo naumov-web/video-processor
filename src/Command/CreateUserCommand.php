@@ -40,7 +40,8 @@ class CreateUserCommand extends Command
         try {
             $request = new CreateUserInputDTO(
                 email: $email,
-                password: $password
+                password: $password,
+                roles: ['ROLE_USER']
             );
 
             $user = $this->useCase->execute($request);

@@ -8,7 +8,10 @@ class TaskFilter extends BaseFilter
 {
     public const ALLOWED_SORTS = [
         'id',
-        'videoId'
+        'videoId',
+        'status',
+        'type',
+        'createdAt',
     ];
     public ?string $status = null;
     public ?string $type = null;
