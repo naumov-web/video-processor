@@ -4,18 +4,23 @@ namespace App\Command;
 
 use App\Models\User\Contract\UserDatabaseRepositoryInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand(
+    name: 'app:jwt:create',
+    description: 'Create a new JWT token',
+)]
 class CreateJwtCommand  extends Command
 {
     public function __construct(
         private UserDatabaseRepositoryInterface $userDatabaseRepository,
         private JWTTokenManagerInterface $jwtManager,
     ) {
-        parent::__construct('app:jwt:create');
+        parent::__construct();
     }
 
     protected function configure(): void
