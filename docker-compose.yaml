@@ -1,80 +1,80 @@
 version: '3.9'
 
 services:
-  nginx:
-    image: nginx:latest
-    container_name: nginx
-    ports:
-      - "${NGINX_PORT:-8080}:80"
-    volumes:
-      - ./app:/var/www/html
-      - ./deployment/local/nginx/default.conf:/etc/nginx/conf.d/default.conf
-    depends_on:
-      - php
-    networks:
-      - app-network
+    nginx:
+        image: nginx:latest
+        container_name: nginx
+        ports:
+          - "${NGINX_PORT:-8080}:80"
+        volumes:
+          - ./app:/var/www/html
+          - ./deployment/local/nginx/default.conf:/etc/nginx/conf.d/default.conf
+        depends_on:
+          - php
+        networks:
+          - app-network
 
-  php:
-    build:
-      context: ./
-      dockerfile: ./deployment/local/php/Dockerfile
-    container_name: php
-    volumes:
-      - ./:/var/www/html
-    depends_on:
-      - postgres
-      - redis
-    networks:
-      - app-network
+    php:
+        build:
+          context: ./
+          dockerfile: ./deployment/local/php/Dockerfile
+        container_name: php
+        volumes:
+          - ./:/var/www/html
+        depends_on:
+          - postgres
+          - redis
+        networks:
+          - app-network
 
-  postgres:
-    image: postgres:15
-    container_name: postgres
-    environment:
-      POSTGRES_DB: app_db
-      POSTGRES_USER: app_user
-      POSTGRES_PASSWORD: secret
-    ports:
-      - "${POSTGRES_PORT}:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    networks:
-      - app-network
+    postgres:
+        image: postgres:15
+        container_name: postgres
+        environment:
+          POSTGRES_DB: app_db
+          POSTGRES_USER: app_user
+          POSTGRES_PASSWORD: secret
+        ports:
+          - "${POSTGRES_PORT}:5432"
+        volumes:
+          - pgdata:/var/lib/postgresql/data
+        networks:
+          - app-network
 
-  redis:
-    image: redis:latest
-    container_name: redis
-    ports:
-      - "${REDIS_PORT}:6379"
-    networks:
-      - app-network
+    redis:
+        image: redis:latest
+        container_name: redis
+        ports:
+          - "${REDIS_PORT}:6379"
+        networks:
+          - app-network
 
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.5.0
-    container_name: zookeeper
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    ports:
-      - "2181:2181"
-    networks:
-      - app-network
+    zookeeper:
+        image: confluentinc/cp-zookeeper:7.5.0
+        container_name: zookeeper
+        environment:
+          ZOOKEEPER_CLIENT_PORT: 2181
+          ZOOKEEPER_TICK_TIME: 2000
+        ports:
+          - "2181:2181"
+        networks:
+          - app-network
 
-  kafka:
-    image: confluentinc/cp-kafka:7.5.0
-    container_name: kafka
-    depends_on:
-      - zookeeper
-    ports:
-      - "9092:9092"
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-    networks:
-      - app-network
+    kafka:
+        image: confluentinc/cp-kafka:7.5.0
+        container_name: kafka
+        depends_on:
+          - zookeeper
+        ports:
+          - "9092:9092"
+        environment:
+          KAFKA_BROKER_ID: 1
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+          KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+        networks:
+          - app-network
 
 volumes:
   pgdata:

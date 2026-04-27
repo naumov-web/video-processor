@@ -17,7 +17,7 @@ services:
         arguments:
             $brokers: '%kafka.brokers%'
 
-    App\Infrastructure\Kafka\KafkaConsumerService:
+    App\Infrastructure\Kafka\KafkaConsumer:
         arguments:
             $brokers: '%kafka.brokers%'
 
