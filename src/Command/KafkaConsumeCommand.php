@@ -2,7 +2,7 @@
 
 namespace App\Command;
 
-use App\Infrastructure\Kafka\KafkaConsumerService;
+use App\Infrastructure\Kafka\KafkaConsumer;
 use App\Models\Task\Enum\OutboxEventType;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -16,7 +16,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class KafkaConsumeCommand extends Command
 {
     public function __construct(
-        private KafkaConsumerService $consumer,
+        private KafkaConsumer $consumer,
     ) {
         parent::__construct();
     }

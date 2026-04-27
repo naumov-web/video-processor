@@ -20,3 +20,4 @@ services:
     App\Infrastructure\Kafka\KafkaConsumerService:
         arguments:
             $brokers: '%kafka.brokers%'
+

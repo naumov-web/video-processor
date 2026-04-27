@@ -2,22 +2,25 @@
 
 namespace App\Infrastructure\Kafka;
 
+use App\UseCase\Task\ProcessTaskUseCase;
 use RdKafka\Conf;
-use RdKafka\KafkaConsumer;
+use RdKafka\KafkaConsumer as CoreKafkaConsumer;
 
-class KafkaConsumerService
+class KafkaConsumer
 {
-    private KafkaConsumer $consumer;
+    private CoreKafkaConsumer $consumer;
 
-    public function __construct(string $brokers)
-    {
+    public function __construct(
+        string $brokers,
+        private ProcessTaskUseCase $processTaskUseCase
+    ) {
         $conf = new Conf();
 
         $conf->set('bootstrap.servers', $brokers);
         $conf->set('group.id', 'task-consumers');
         $conf->set('auto.offset.reset', 'earliest');
 
-        $this->consumer = new KafkaConsumer($conf);
+        $this->consumer = new CoreKafkaConsumer($conf);
     }
 
     public function subscribe(string $topic): void
@@ -32,7 +35,13 @@ class KafkaConsumerService
 
             switch ($message->err) {
                 case RD_KAFKA_RESP_ERR_NO_ERROR:
-                    echo "Received: " . $message->payload . PHP_EOL;
+                    $data = json_decode($message->payload, true);
+
+                    if (!isset($data['task_id'])) {
+                        return;
+                    }
+                    $this->processTaskUseCase->execute((int)$data['task_id']);
+
                     break;
 
                 case RD_KAFKA_RESP_ERR__PARTITION_EOF:
