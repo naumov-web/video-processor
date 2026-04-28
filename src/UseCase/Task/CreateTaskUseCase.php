@@ -35,7 +35,7 @@ class CreateTaskUseCase
         $this->em->beginTransaction();
 
         try {
-            $this->taskDatabaseRepository->save($task);
+            $this->taskDatabaseRepository->save($task, true);
             $event = new OutboxEvent(
                 eventType: OutboxEventType::taskCreated->value,
                 aggregateId: $task->getId(),
@@ -43,7 +43,7 @@ class CreateTaskUseCase
                     'task_id' => $task->getId(),
                 ]
             );
-            $this->outboxEventDatabaseRepository->save($event);
+            $this->outboxEventDatabaseRepository->save($event, true);
             $this->em->commit();
 
             return $task;

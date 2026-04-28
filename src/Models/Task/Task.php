@@ -116,6 +116,11 @@ class Task
         $this->status = TaskStatus::failed;
     }
 
+    public function markPending(): void
+    {
+        $this->status = TaskStatus::pending;
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -154,5 +159,40 @@ class Task
     public function getPriority(): int
     {
         return $this->priority;
+    }
+
+    public function getAttemptsCount(): int
+    {
+        return $this->attemptsCount;
+    }
+
+    public function setAttemptsCount(int $attemptsCount): void
+    {
+        $this->attemptsCount = $attemptsCount;
+    }
+
+    public function setLastError(?array $lastError): void
+    {
+        $this->lastError = $lastError;
+    }
+
+    public function setMaxAttempts(int $maxAttempts): void
+    {
+        $this->maxAttempts = $maxAttempts;
+    }
+
+    public function getMaxAttempts(): int
+    {
+        return $this->maxAttempts;
+    }
+
+    public function setFinishedAt(?\DateTimeImmutable $finishedAt): void
+    {
+        $this->finishedAt = $finishedAt;
+    }
+
+    public function setNextRetryAt(?\DateTimeImmutable $nextRetryAt): void
+    {
+        $this->nextRetryAt = $nextRetryAt;
     }
 }
