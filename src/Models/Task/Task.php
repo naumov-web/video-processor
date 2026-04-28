@@ -87,6 +87,16 @@ class Task
         $this->updatedAt = new \DateTimeImmutable();
     }
 
+    public function markCompleted(): void
+    {
+        if ($this->status !== TaskStatus::running) {
+            throw new InvalidTaskStatusException('Task must be running to complete.');
+        }
+
+        $this->status = TaskStatus::completed;
+        $this->finishedAt = new \DateTimeImmutable();
+    }
+
     public function markRunning(): void
     {
         if ($this->status !== TaskStatus::pending) {
@@ -95,6 +105,15 @@ class Task
 
         $this->status = TaskStatus::running;
         $this->startedAt = new \DateTimeImmutable();
+    }
+
+    public function markFailed(): void
+    {
+        if ($this->status !== TaskStatus::running) {
+            throw new InvalidTaskStatusException('Task must be running to move to the failed status');
+        }
+
+        $this->status = TaskStatus::failed;
     }
 
     public function getId(): ?int

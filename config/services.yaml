@@ -13,6 +13,21 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.exception }
 
+    Redis:
+        class: Redis
+        calls:
+            - connect:
+                - '%env(REDIS_HOST)%'
+                - '%env(int:REDIS_PORT)%'
+
+    App\Models\Task\Handler\:
+        resource: '../src/Models/Task/Handler/'
+        tags: [ 'app.task_handler' ]
+
+    App\Models\Task\Processor\TaskProcessor:
+        arguments:
+            $handlers: !tagged_iterator app.task_handler
+
     App\Infrastructure\Kafka\KafkaProducer:
         arguments:
             $brokers: '%kafka.brokers%'
@@ -20,4 +35,8 @@ services:
     App\Infrastructure\Kafka\KafkaConsumer:
         arguments:
             $brokers: '%kafka.brokers%'
+
+    App\Infrastructure\Redis\RedisDeduplicationService:
+        arguments:
+            $redis: '@Redis'
 
