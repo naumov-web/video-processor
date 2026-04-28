@@ -98,7 +98,6 @@ class TaskDatabaseRepository extends ServiceEntityRepository implements TaskData
             return [];
         }
 
-        // 🔥 2. загружаем сущности через Doctrine
         return $this->createQueryBuilder('t')
             ->where('t.id IN (:ids)')
             ->setParameter('ids', $ids)
