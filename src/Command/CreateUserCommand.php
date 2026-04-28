@@ -4,20 +4,19 @@ namespace App\Command;
 
 use App\UseCase\User\CreateUserUseCase;
 use App\UseCase\User\Input\CreateUserInputDTO;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand(
+    name: 'app:user:create',
+    description: 'Create a new user',
+)]
 class CreateUserCommand extends Command
 {
-    public function __construct(
-        private CreateUserUseCase $useCase
-    ) {
-        parent::__construct('app:user:create');
-    }
-
     protected function configure(): void
     {
         $this
@@ -40,7 +39,8 @@ class CreateUserCommand extends Command
         try {
             $request = new CreateUserInputDTO(
                 email: $email,
-                password: $password
+                password: $password,
+                roles: ['ROLE_USER']
             );
 
             $user = $this->useCase->execute($request);
