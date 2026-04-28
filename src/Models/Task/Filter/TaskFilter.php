@@ -6,17 +6,18 @@ use App\Models\Common\Filter\BaseFilter;
 
 class TaskFilter extends BaseFilter
 {
+    public const ALLOWED_SORTS = [
+        'id',
+        'videoId',
+        'status',
+        'type',
+        'createdAt',
+    ];
     public ?string $status = null;
     public ?string $type = null;
 
     protected function getAllowedSorts(): array
     {
-        return [
-            'id',
-            'createdAt',
-            'status',
-            'type',
-            'videoId'
-        ];
+        return self::ALLOWED_SORTS;
     }
 }

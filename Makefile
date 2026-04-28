@@ -4,6 +4,9 @@ PHP=$(DC) exec php
 up:
 	$(DC) up
 
+up-elk:
+	$(DC) -f docker-compose.yaml -f docker-compose.elk.yaml up
+
 build:
 	$(DC) up --build
 

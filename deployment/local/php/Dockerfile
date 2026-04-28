@@ -13,6 +13,11 @@ RUN apt-get update && apt-get install -y \
 
 RUN pecl install redis && docker-php-ext-enable redis
 
+RUN apt-get update \
+    && apt-get install -y librdkafka-dev \
+    && pecl install rdkafka \
+    && docker-php-ext-enable rdkafka
+
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
