@@ -163,4 +163,12 @@ class TaskDatabaseRepository extends ServiceEntityRepository implements TaskData
             $total
         );
     }
+
+    public function getById(int $id): ?Task
+    {
+        /** @var Task|null $model */
+        $model = $this->find($id);
+
+        return $model;
+    }
 }

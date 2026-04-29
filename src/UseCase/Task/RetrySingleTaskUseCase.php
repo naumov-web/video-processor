@@ -27,7 +27,7 @@ class RetrySingleTaskUseCase
     public function execute(int $taskId): void
     {
         /** @var Task|null $task */
-        $task = $this->taskDatabaseRepository->find($taskId);
+        $task = $this->taskDatabaseRepository->getById($taskId);
 
         if (!$task) {
             throw new TaskNotFoundException("Task not found");
