@@ -24,4 +24,6 @@ interface TaskDatabaseRepositoryInterface
     public function updateHeartbeat(int $taskId): void;
 
     public function findStaleRunningTasks(\DateTimeImmutable $threshold, int $limit): array;
+
+    public function getVideoStatistic(int $videoId): array;
 }

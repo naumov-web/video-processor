@@ -5,6 +5,7 @@ namespace App\Models\Task\Repository;
 use App\Models\Common\DTO\PaginatedResultDTO;
 use App\Models\Task\Collection\TaskCollection;
 use App\Models\Task\Contract\TaskDatabaseRepositoryInterface;
+use App\Models\Task\DTO\VideoStatisticDTO;
 use App\Models\Task\Enum\TaskStatus;
 use App\Models\Task\Enum\TaskType;
 use App\Models\Task\Filter\TaskFilter;
@@ -158,5 +159,67 @@ class TaskDatabaseRepository extends ServiceEntityRepository implements TaskData
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+    }
+
+    public function getVideoStatistic(int $videoId): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql = <<<SQL
+            select
+                id,
+                status,
+                type,
+                created_at,
+
+                row_number() over (
+                    partition by video_id
+                    order by created_at, id
+                ) as attempt_number,
+
+                lag(created_at) over (
+                    partition by video_id
+                    order by created_at, id
+                ) as prev_attempt_at,
+
+                TO_CHAR(
+                    created_at - LAG(created_at) OVER (
+                        PARTITION BY video_id
+                        ORDER BY created_at, id
+                    ),
+                    'HH24:MI:SS'
+                ) as retry_delay,
+
+                COUNT(*) OVER (PARTITION BY video_id) as total_tasks,
+
+                COUNT(*) FILTER (WHERE status = 'completed')
+                    OVER (PARTITION BY video_id) as success_count,
+
+                COUNT(*) FILTER (WHERE status = 'failed')
+                    OVER (PARTITION BY video_id) as failed_count
+
+            from tasks
+            where video_id = :videoId
+            order by created_at, id;
+        SQL;
+        $rows = $conn->executeQuery($sql, [
+            'videoId' => $videoId
+        ])->fetchAllAssociative();
+
+        return array_map(function (array $row) {
+            return new VideoStatisticDTO(
+                taskId: (int) $row['id'],
+                status: $row['status'],
+                type: $row['type'],
+                createdAt: new \DateTimeImmutable($row['created_at']),
+                attemptNumber: (int) $row['attempt_number'],
+                prevAttemptAt: $row['prev_attempt_at']
+                    ? new \DateTimeImmutable($row['prev_attempt_at'])
+                    : null,
+                retryDelay: $row['retry_delay'] ?? null,
+                totalTasks: (int) $row['total_tasks'],
+                successCount: (int) $row['success_count'],
+                failedCount: (int) $row['failed_count'],
+            );
+        }, $rows);
     }
 }
