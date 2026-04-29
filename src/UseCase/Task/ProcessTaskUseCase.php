@@ -55,6 +55,6 @@ class ProcessTaskUseCase
     private function markAsRunning(Task $task): void
     {
         $task->markRunning();
-        $this->taskDatabaseRepository->save($task);
+        $this->taskDatabaseRepository->save($task, true);
     }
 }

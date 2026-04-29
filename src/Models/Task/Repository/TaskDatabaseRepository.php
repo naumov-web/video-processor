@@ -146,4 +146,17 @@ class TaskDatabaseRepository extends ServiceEntityRepository implements TaskData
             ->getQuery()
             ->execute();
     }
+
+    public function findStaleRunningTasks(\DateTimeImmutable $threshold, int $limit): array
+    {
+        return $this->createQueryBuilder('t')
+            ->where('t.status = :status')
+            ->andWhere('t.lastHeartbeatAt IS NOT NULL')
+            ->andWhere('t.lastHeartbeatAt < :threshold')
+            ->setParameter('status', TaskStatus::running->value)
+            ->setParameter('threshold', $threshold)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

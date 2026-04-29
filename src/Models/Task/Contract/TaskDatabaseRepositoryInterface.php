@@ -22,4 +22,6 @@ interface TaskDatabaseRepositoryInterface
     public function findPaginated(TaskFilter $filter): PaginatedResultDTO;
 
     public function updateHeartbeat(int $taskId): void;
+
+    public function findStaleRunningTasks(\DateTimeImmutable $threshold, int $limit): array;
 }

@@ -19,7 +19,7 @@ class ThumbnailGenerationHandler extends BaseHandler implements TaskHandlerInter
     {
         $taskId = $task->getId();
         $this->logger->info("Start thumbnail generation for task {$taskId}");
-        $process = new Process(['sleep', '20']);
+        $process = new Process(['sleep', '25']);
         $process->start();
         $lastHeartbeat = $this->updateHeartbeat($taskId);
 
