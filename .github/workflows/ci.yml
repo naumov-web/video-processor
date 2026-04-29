@@ -1,0 +1,47 @@
+name: CI
+
+on:
+    push:
+        branches: [ main, develop ]
+    pull_request:
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+
+        env:
+            APP_ENV: test
+
+        services:
+            postgres:
+                image: postgres:15
+                env:
+                    POSTGRES_DB: app
+                    POSTGRES_USER: app
+                    POSTGRES_PASSWORD: secret
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd="pg_isready -U app"
+                    --health-interval=10s
+                    --health-timeout=5s
+                    --health-retries=5
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: 8.3
+                  extensions: pdo_pgsql, pgsql, redis
+
+            - name: Install dependencies
+              run: composer install --no-interaction --no-scripts
+
+            - name: Prepare config
+              run: cp phpunit.xml.dist phpunit.xml
+
+            - name: Run tests
+              run: php vendor/bin/phpunit
