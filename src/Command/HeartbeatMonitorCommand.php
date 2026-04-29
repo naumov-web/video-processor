@@ -16,6 +16,8 @@ class HeartbeatMonitorCommand extends Command
 {
     private const DELAY = 5;
 
+    private bool $running = true;
+
     public function __construct(
         private readonly HeartbeatMonitorUseCase $monitorUseCase,
     ) {
@@ -24,9 +26,18 @@ class HeartbeatMonitorCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        while (true) {
-            $this->monitorUseCase->execute();
+        pcntl_async_signals(true);
 
+        pcntl_signal(SIGTERM, function () {
+            $this->running = false;
+        });
+
+        pcntl_signal(SIGINT, function () {
+            $this->running = false;
+        });
+
+        while ($this->running) {
+            $this->monitorUseCase->execute();
             sleep(self::DELAY);
         }
 

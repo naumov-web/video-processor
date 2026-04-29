@@ -17,6 +17,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 )]
 class CreateUserCommand extends Command
 {
+    public function __construct(private CreateUserUseCase $useCase)
+    {
+        parent::__construct();
+    }
+
     protected function configure(): void
     {
         $this

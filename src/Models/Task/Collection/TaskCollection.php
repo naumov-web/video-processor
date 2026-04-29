@@ -8,10 +8,7 @@ class TaskCollection implements \IteratorAggregate, \Countable
 {
     /** @var Task[] */
     private array $items;
-
-    /**
-     * @param Task[] $items
-     */
+    
     public function __construct(array $items)
     {
         foreach ($items as $item) {

@@ -210,5 +210,53 @@ class Task
         $this->lastHeartbeatAt = $lastHeartbeatAt;
     }
 
+    public function getFinishedAt(): ?\DateTimeImmutable
+    {
+        return $this->finishedAt;
+    }
 
+    public function getNextRetryAt(): ?\DateTimeImmutable
+    {
+        return $this->nextRetryAt;
+    }
+
+    public function getUpdatedAt(): \DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function getVersion(): int
+    {
+        return $this->version;
+    }
+
+    public function getInputData(): array
+    {
+        return $this->inputData;
+    }
+
+    public function getLastError(): ?array
+    {
+        return $this->lastError;
+    }
+
+    public function getSource(): string
+    {
+        return $this->source;
+    }
+
+    public function getProcessingKey(): ?string
+    {
+        return $this->processingKey;
+    }
+
+    public function getOutputData(): ?array
+    {
+        return $this->outputData;
+    }
+
+    public function setOutputData(?array $outputData): void
+    {
+        $this->outputData = $outputData;
+    }
 }

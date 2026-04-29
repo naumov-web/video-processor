@@ -36,7 +36,7 @@ class OutboxProcessor
         $this->kafkaProducer->publish(
             $event->getEventType(),
             $event->getPayload(),
-            $event->getAggregateId()
+            (string)$event->getAggregateId()
         );
     }
 }
