@@ -59,6 +59,9 @@ class Task
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $finishedAt = null;
 
+    #[ORM\Column(name: 'last_heartbeat_at', type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $lastHeartbeatAt = null;
+
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
 
@@ -105,6 +108,7 @@ class Task
 
         $this->status = TaskStatus::running;
         $this->startedAt = new \DateTimeImmutable();
+        $this->lastHeartbeatAt = new \DateTimeImmutable();
     }
 
     public function markFailed(): void
@@ -194,5 +198,15 @@ class Task
     public function setNextRetryAt(?\DateTimeImmutable $nextRetryAt): void
     {
         $this->nextRetryAt = $nextRetryAt;
+    }
+
+    public function getLastHeartbeatAt(): ?\DateTimeImmutable
+    {
+        return $this->lastHeartbeatAt;
+    }
+
+    public function setLastHeartbeatAt(?\DateTimeImmutable $lastHeartbeatAt): void
+    {
+        $this->lastHeartbeatAt = $lastHeartbeatAt;
     }
 }

@@ -37,43 +37,6 @@ class TaskDatabaseRepository extends ServiceEntityRepository implements TaskData
         return $task;
     }
 
-    public function findNextForProcessing(): ?Task
-    {
-        $em = $this->getEntityManager();
-        $em->beginTransaction();
-
-        try {
-            $conn = $em->getConnection();
-            $sql = <<<SQL
-                select id
-                from tasks
-                where status = :status
-                order by priority desc, created_at asc
-                limit 1
-                for update skip locked
-            SQL;
-            $id = $conn->fetchOne($sql, [
-                'status' => TaskStatus::pending->value,
-            ]);
-
-            if (!$id) {
-                $em->commit();
-                return null;
-            }
-
-            /** @var Task $task */
-            $task = $this->find($id);
-            $task->markRunning();
-            $em->flush();
-            $em->commit();
-
-            return $task;
-        } catch (\Throwable $e) {
-            $em->rollback();
-            throw $e;
-        }
-    }
-
     public function findRetryableTasks(int $limit = 10): array
     {
         $conn = $this->getEntityManager()->getConnection();
@@ -170,5 +133,17 @@ class TaskDatabaseRepository extends ServiceEntityRepository implements TaskData
         $model = $this->find($id);
 
         return $model;
+    }
+
+    public function updateHeartbeat(int $taskId): void
+    {
+        $this->getEntityManager()->createQueryBuilder()
+            ->update(Task::class, 't')
+            ->set('t.lastHeartbeatAt', ':now')
+            ->where('t.id = :id')
+            ->setParameter('now', new \DateTimeImmutable())
+            ->setParameter('id', $taskId)
+            ->getQuery()
+            ->execute();
     }
 }

@@ -15,11 +15,11 @@ interface TaskDatabaseRepositoryInterface
 
     public function findById(int $id): ?Task;
 
-    public function findNextForProcessing(): ?Task;
-
     public function findRetryableTasks(int $limit = 10): array;
 
     public function existsActiveTaskForVideo(int $videoId, TaskType $type): bool;
 
     public function findPaginated(TaskFilter $filter): PaginatedResultDTO;
+
+    public function updateHeartbeat(int $taskId): void;
 }
