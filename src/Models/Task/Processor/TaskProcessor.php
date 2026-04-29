@@ -3,6 +3,7 @@
 namespace App\Models\Task\Processor;
 
 use App\Models\Task\Contract\TaskHandlerInterface;
+use App\Models\Task\Strategy\RetryStrategyInterface;
 use App\Models\Task\Task;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -16,6 +17,7 @@ class TaskProcessor
         private iterable $handlers,
         private EntityManagerInterface $em,
         private LoggerInterface $logger,
+        private RetryStrategyInterface $retryStrategy,
     ) {}
 
     public function process(Task $task): void
@@ -32,10 +34,33 @@ class TaskProcessor
             $this->logger->info("Task {$task->getId()} completed");
 
         } catch (\Throwable $e) {
-            $task->markFailed();
-            $this->em->flush();
+            $attempts = $task->getAttemptsCount() + 1;
+            $task->setAttemptsCount($attempts);
+            $task->setLastError([
+                'message' => $e->getMessage(),
+            ]);
 
-            $this->logger->error("Task {$task->getId()} failed: " . $e->getMessage());
+            if ($attempts >= $task->getMaxAttempts()) {
+
+                $task->markFailed();
+                $task->setFinishedAt(new \DateTimeImmutable());
+
+                $this->logger->error("Task {$task->getId()} failed completely!");
+
+            } else {
+                $nextRetryAt = $this->retryStrategy->getNextRetryAt($attempts);
+                $task->markPending();
+                $task->setNextRetryAt($nextRetryAt);
+
+                $this->logger->warning(sprintf(
+                    "Task %d retry #%d scheduled at %s",
+                    $task->getId(),
+                    $attempts,
+                    $nextRetryAt->format('Y-m-d H:i:s')
+                ));
+            }
+
+            $this->em->flush();
         }
     }
 

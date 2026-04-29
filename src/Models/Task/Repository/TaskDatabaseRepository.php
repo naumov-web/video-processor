@@ -19,11 +19,14 @@ class TaskDatabaseRepository extends ServiceEntityRepository implements TaskData
         parent::__construct($registry, Task::class);
     }
 
-    public function save(Task $task): void
+    public function save(Task $task, bool $flush = false): void
     {
         $em = $this->getEntityManager();
         $em->persist($task);
-        $em->flush();
+
+        if ($flush) {
+            $em->flush();
+        }
     }
 
     public function findById(int $id): ?Task
@@ -73,13 +76,31 @@ class TaskDatabaseRepository extends ServiceEntityRepository implements TaskData
 
     public function findRetryableTasks(int $limit = 10): array
     {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql = <<<SQL
+            select id
+            from tasks
+            where status = :status
+              and next_retry_at <= now()
+            order by next_retry_at asc
+            limit :limit
+            for update skip locked
+        SQL;
+        $ids = $conn->fetchFirstColumn(
+            $sql,
+            [
+                'status' => TaskStatus::pending->value,
+                'limit' => $limit,
+            ]
+        );
+
+        if (empty($ids)) {
+            return [];
+        }
+
         return $this->createQueryBuilder('t')
-            ->where('t.status = :status')
-            ->andWhere('t.nextRetryAt <= :now')
-            ->setParameter('status', TaskStatus::pending)
-            ->setParameter('now', new \DateTimeImmutable())
-            ->orderBy('t.nextRetryAt', 'ASC')
-            ->setMaxResults($limit)
+            ->where('t.id IN (:ids)')
+            ->setParameter('ids', $ids)
             ->getQuery()
             ->getResult();
     }
@@ -141,5 +162,13 @@ class TaskDatabaseRepository extends ServiceEntityRepository implements TaskData
             new TaskCollection($items),
             $total
         );
+    }
+
+    public function getById(int $id): ?Task
+    {
+        /** @var Task|null $model */
+        $model = $this->find($id);
+
+        return $model;
     }
 }

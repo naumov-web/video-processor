@@ -27,7 +27,7 @@ class ProcessTaskUseCase
         }
 
         /** @var Task|null $task */
-        $task = $this->taskDatabaseRepository->find($taskId);
+        $task = $this->taskDatabaseRepository->getById($taskId);
 
         if (!$task) {
             $this->logger->warning("Task {$taskId} not found");

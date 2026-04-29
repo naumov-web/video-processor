@@ -6,7 +6,7 @@ use App\Models\Task\OutboxEvent;
 
 interface OutboxEventDatabaseRepositoryInterface
 {
-    public function save(OutboxEvent $event): void;
+    public function save(OutboxEvent $event, bool $flush = false): void;
 
     /**
      * @return OutboxEvent[]

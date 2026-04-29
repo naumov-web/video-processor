@@ -4,6 +4,14 @@ nelmio_api_doc:
         info:
             title: Video processor API
             version: 1.0.0
+        components:
+            securitySchemes:
+                Bearer:
+                    type: http
+                    scheme: bearer
+                    bearerFormat: JWT
+            security:
+                -   Bearer: [ ]
     areas:
         path_patterns: # an array of regexps (document only routes under /api, except /api/doc)
             - ^/api(?!/doc$)

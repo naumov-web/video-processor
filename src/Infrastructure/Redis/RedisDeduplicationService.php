@@ -2,9 +2,10 @@
 
 namespace App\Infrastructure\Redis;
 
+use App\Infrastructure\Contract\DeduplicationServiceInterface;
 use Redis;
 
-class RedisDeduplicationService
+class RedisDeduplicationService implements DeduplicationServiceInterface
 {
     private const TTL = 600; // 10 минут
 
@@ -27,6 +28,12 @@ class RedisDeduplicationService
         );
 
         return $result === true;
+    }
+
+    public function release(int $taskId): void
+    {
+        $key = $this->buildKey($taskId);
+        $this->redis->del($key);
     }
 
     private function buildKey(int $taskId): string

@@ -14,11 +14,14 @@ class OutboxEventDatabaseRepository extends ServiceEntityRepository implements O
         parent::__construct($registry, OutboxEvent::class);
     }
 
-    public function save(OutboxEvent $event): void
+    public function save(OutboxEvent $event, bool $flush = false): void
     {
         $em = $this->getEntityManager();
         $em->persist($event);
-        $em->flush();
+
+        if ($flush) {
+            $em->flush();
+        }
     }
 
     /**

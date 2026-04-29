@@ -40,3 +40,12 @@ services:
         arguments:
             $redis: '@Redis'
 
+    App\Models\Task\Strategy\RetryStrategyInterface:
+        alias: App\Models\Task\Strategy\ExponentialBackoffRetryStrategy
+
+    App\Models\Task\Strategy\ExponentialBackoffRetryStrategy:
+        arguments:
+            $baseDelay: 10
+            $maxDelay: 300
+            $jitter: 5
+

@@ -3,6 +3,8 @@
 namespace App\Controller\Api;
 
 use App\Models\Task\Enum\TaskType;
+use App\Models\Task\Exception\InvalidTaskStatusException;
+use App\Models\Task\Exception\TaskNotFoundException;
 use App\Models\Task\Task;
 use App\Models\Task\Validator\CreateTaskValidator;
 use App\Models\Task\Validator\GetTasksValidator;
@@ -10,6 +12,7 @@ use App\UseCase\Task\CreateTaskUseCase;
 use App\UseCase\Task\GetTasksUseCase;
 use App\UseCase\Task\Input\CreateTaskInputDTO;
 use App\UseCase\Task\Input\GetTasksInputDTO;
+use App\UseCase\Task\RetrySingleTaskUseCase;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -25,11 +28,13 @@ class TasksController extends AbstractController
         private GetTasksUseCase $getTasksUseCase,
         private CreateTaskValidator $createTaskValidator,
         private GetTasksValidator $getTasksValidator,
+        private RetrySingleTaskUseCase $retrySingleTaskUseCase,
     ) {}
 
     #[Route('', methods: ['POST'])]
     #[OA\Post(
         summary: 'Create video processing task',
+        security: [['Bearer' => []]],
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
@@ -61,8 +66,15 @@ class TasksController extends AbstractController
                 )
             ),
             new OA\Response(
-                response: 400,
-                description: 'Invalid request'
+                response: 422,
+                description: 'Validation error',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'errors', type: 'object', example: [
+                            'videoId' => ['This field is required.'],
+                        ]),
+                    ]
+                )
             )
         ]
     )]
@@ -91,6 +103,7 @@ class TasksController extends AbstractController
     #[Route('', methods: ['GET'])]
     #[OA\Get(
         summary: 'Get list of video tasks',
+        security: [['Bearer' => []]],
         parameters: [
             new OA\Parameter(
                 name: 'limit',
@@ -155,7 +168,14 @@ class TasksController extends AbstractController
             ),
             new OA\Response(
                 response: 422,
-                description: 'Validation error'
+                description: 'Validation error',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'errors', type: 'object', example: [
+                            'limit' => ['This field must have an integer.'],
+                        ]),
+                    ]
+                )
             )
         ]
     )]
@@ -191,6 +211,73 @@ class TasksController extends AbstractController
                     'createdAt' => $task->getCreatedAt()->format(DATE_ATOM),
                 ], $paginatedResult->items->toArray()),
             'total' => $paginatedResult->total,
+        ]);
+    }
+
+    #[Route('/{id}/retry', methods: ['PATCH'])]
+    #[OA\Patch(
+        summary: 'Manually retry a task',
+        security: [['Bearer' => []]],
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'integer')
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'OK',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 400,
+                description: 'Invalid request',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'message', type: 'string', example: 'Invalid task status'),
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 404,
+                description: 'Not found',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'message', type: 'string', example: 'Task not found'),
+                    ]
+                )
+            )
+        ]
+    )]
+    public function retry(int $id): JsonResponse
+    {
+        try {
+            $this->retrySingleTaskUseCase->execute($id);
+        } catch (InvalidTaskStatusException $e) {
+            return new JsonResponse(
+                [
+                    'message' => $e->getMessage(),
+                ],
+                Response::HTTP_BAD_REQUEST
+            );
+        } catch (TaskNotFoundException $e) {
+            return new JsonResponse(
+                [
+                    'message' => $e->getMessage(),
+                ],
+                Response::HTTP_NOT_FOUND
+            );
+        }
+
+        return new JsonResponse([
+            'success' => true
         ]);
     }
 }

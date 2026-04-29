@@ -9,7 +9,9 @@ use App\Models\Task\Task;
 
 interface TaskDatabaseRepositoryInterface
 {
-    public function save(Task $task): void;
+    public function getById(int $id): ?Task;
+
+    public function save(Task $task, bool $flush = false): void;
 
     public function findById(int $id): ?Task;
 
