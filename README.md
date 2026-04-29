@@ -15,13 +15,14 @@
 
 ## App console commands
 
-| Command            |     Logic of the command      |
-|--------------------|:-----------------------------:|
-| app:jwt:create     | Create JWT token for the user |
-| app:user:create    |       Create a new user       |
-| app:kafka:consume  |      Run Kafka consumer       |
-| app:outbox:process | Send Outbox messages to Kafka |
-| app:task:retry     |      Run retry of tasks       |
+| Command                    |            Logic of the command            |
+|----------------------------|:------------------------------------------:|
+| app:jwt:create             |       Create JWT token for the user        |
+| app:user:create            |             Create a new user              |
+| app:kafka:consume          |             Run Kafka consumer             |
+| app:outbox:process         |       Send Outbox messages to Kafka        |
+| app:task:retry             |             Run retry of tasks             |
+| app:task:heartbeat-monitor | Run heartbeat monitor to retry stale tasks |
 
 ## Links
 
