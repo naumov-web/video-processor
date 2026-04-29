@@ -40,6 +40,9 @@ jobs:
             - name: Install dependencies
               run: composer install --no-interaction --no-scripts
 
+            - name: Run PHPStan
+              run: vendor/bin/phpstan analyse
+
             - name: Prepare config
               run: cp phpunit.xml.dist phpunit.xml
 

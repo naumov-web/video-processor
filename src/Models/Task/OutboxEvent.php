@@ -94,4 +94,19 @@ class OutboxEvent
             $this->status = self::STATUS_FAILED;
         }
     }
+
+    public function getProcessedAt(): ?\DateTimeImmutable
+    {
+        return $this->processedAt;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function getLastError(): ?string
+    {
+        return $this->lastError;
+    }
 }

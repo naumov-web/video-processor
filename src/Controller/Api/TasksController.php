@@ -191,8 +191,8 @@ class TasksController extends AbstractController
         ];
         $this->getTasksValidator->validate($data);
         $input = new GetTasksInputDTO(
-            offset: $data['offset'] ?? null,
-            limit: $data['limit'] ?? null,
+            offset: $data['offset'],
+            limit: $data['limit'],
             sortBy: $data['sortBy'] ?? null,
             direction: $data['direction'] ?? null,
             status: $data['status'] ?? null,
