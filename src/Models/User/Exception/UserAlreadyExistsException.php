@@ -2,6 +2,6 @@
 
 namespace App\Models\User\Exception;
 
-class UserAlreadyExistsException extends \Exception
+final class UserAlreadyExistsException extends \Exception
 {
 }
