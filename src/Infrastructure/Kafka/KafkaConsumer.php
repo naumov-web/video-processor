@@ -5,6 +5,7 @@ namespace App\Infrastructure\Kafka;
 use App\UseCase\Task\ProcessTaskUseCase;
 use RdKafka\Conf;
 use RdKafka\KafkaConsumer as CoreKafkaConsumer;
+use RdKafka\Metadata;
 
 class KafkaConsumer
 {
@@ -55,5 +56,13 @@ class KafkaConsumer
                     break;
             }
         }
+    }
+
+    public function check(): bool
+    {
+        /** @var Metadata $metadata */
+        $metadata = $this->consumer->getMetadata(true, null, 1000);
+
+        return $metadata->getBrokers()->count() > 0;
     }
 }
