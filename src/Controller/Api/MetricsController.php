@@ -4,11 +4,12 @@ namespace App\Controller\Api;
 
 use App\Infrastructure\Metrics\MetricsService;
 use Prometheus\RenderTextFormat;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
 
 #[Route('/api/metrics')]
-class MetricsController
+class MetricsController  extends AbstractController
 {
     public function __construct(
         private readonly MetricsService $metrics
