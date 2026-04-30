@@ -2,6 +2,7 @@
 
 namespace App\Models\Task\Processor;
 
+use App\Infrastructure\Metrics\MetricsService;
 use App\Models\Task\Contract\TaskHandlerInterface;
 use App\Models\Task\Strategy\RetryStrategyInterface;
 use App\Models\Task\Task;
@@ -14,15 +15,17 @@ class TaskProcessor
      * @param iterable<TaskHandlerInterface> $handlers
      */
     public function __construct(
-        private iterable $handlers,
-        private EntityManagerInterface $em,
-        private LoggerInterface $logger,
-        private RetryStrategyInterface $retryStrategy,
+        private readonly iterable $handlers,
+        private readonly EntityManagerInterface $em,
+        private readonly LoggerInterface $logger,
+        private readonly RetryStrategyInterface $retryStrategy,
+        private readonly MetricsService $metricsService,
     ) {}
 
     public function process(Task $task): void
     {
         $this->logger->info("Processing task {$task->getId()}");
+        $start = microtime(true);
 
         try {
             $handler = $this->resolveHandler($task->getType()->value);
@@ -32,7 +35,7 @@ class TaskProcessor
             $this->em->flush();
 
             $this->logger->info("Task {$task->getId()} completed");
-
+            $this->metricsService->incrementProcessed();
         } catch (\Throwable $e) {
             $attempts = $task->getAttemptsCount() + 1;
             $task->setAttemptsCount($attempts);
@@ -46,7 +49,7 @@ class TaskProcessor
                 $task->setFinishedAt(new \DateTimeImmutable());
 
                 $this->logger->error("Task {$task->getId()} failed completely!");
-
+                $this->metricsService->incrementFailed();
             } else {
                 $nextRetryAt = $this->retryStrategy->getNextRetryAt($attempts);
                 $task->markPending();
@@ -61,6 +64,9 @@ class TaskProcessor
             }
 
             $this->em->flush();
+        } finally {
+            $duration = microtime(true) - $start;
+            $this->metricsService->observeDuration($duration);
         }
     }
 

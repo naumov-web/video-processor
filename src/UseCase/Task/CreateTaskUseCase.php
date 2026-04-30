@@ -14,9 +14,9 @@ use Doctrine\ORM\EntityManagerInterface;
 class CreateTaskUseCase
 {
     public function __construct(
-        private TaskDatabaseRepositoryInterface $taskDatabaseRepository,
-        private OutboxEventDatabaseRepository $outboxEventDatabaseRepository,
-        private EntityManagerInterface $em,
+        private readonly TaskDatabaseRepositoryInterface $taskDatabaseRepository,
+        private readonly OutboxEventDatabaseRepository $outboxEventDatabaseRepository,
+        private readonly EntityManagerInterface $em,
     ) {}
 
     public function execute(CreateTaskInputDTO $input): Task
