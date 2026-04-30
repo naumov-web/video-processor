@@ -10,7 +10,7 @@ use App\UseCase\Task\Input\GetTasksInputDTO;
 class GetTasksUseCase
 {
     public function __construct(
-        private TaskDatabaseRepositoryInterface $repository
+        private readonly TaskDatabaseRepositoryInterface $repository
     ){}
 
     public function execute(GetTasksInputDTO $input): PaginatedResultDTO
