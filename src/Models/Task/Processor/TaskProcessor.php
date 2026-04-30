@@ -3,7 +3,10 @@
 namespace App\Models\Task\Processor;
 
 use App\Infrastructure\Metrics\MetricsService;
+use App\Models\Task\Contract\OutboxEventDatabaseRepositoryInterface;
 use App\Models\Task\Contract\TaskHandlerInterface;
+use App\Models\Task\Enum\OutboxEventType;
+use App\Models\Task\OutboxEvent;
 use App\Models\Task\Strategy\RetryStrategyInterface;
 use App\Models\Task\Task;
 use Doctrine\ORM\EntityManagerInterface;
@@ -20,6 +23,7 @@ class TaskProcessor
         private readonly LoggerInterface $logger,
         private readonly RetryStrategyInterface $retryStrategy,
         private readonly MetricsService $metricsService,
+        private readonly OutboxEventDatabaseRepositoryInterface $outboxEventDatabaseRepository
     ) {}
 
     public function process(Task $task): void
@@ -31,12 +35,24 @@ class TaskProcessor
             $handler = $this->resolveHandler($task->getType()->value);
             $handler->handle($task);
 
+            $this->em->beginTransaction();
             $task->markCompleted();
+            $event = new OutboxEvent(
+                OutboxEventType::taskCompleted->value,
+                $task->getId(),
+                [
+                    'task_id' => $task->getId(),
+                    'output' => $task->getOutputData()
+                ]
+            );
+            $this->outboxEventDatabaseRepository->save($event);
             $this->em->flush();
+            $this->em->commit();
 
             $this->logger->info("Task {$task->getId()} completed");
             $this->metricsService->incrementProcessed();
         } catch (\Throwable $e) {
+            $this->em->beginTransaction();
             $attempts = $task->getAttemptsCount() + 1;
             $task->setAttemptsCount($attempts);
             $task->setLastError([
@@ -44,9 +60,18 @@ class TaskProcessor
             ]);
 
             if ($attempts >= $task->getMaxAttempts()) {
-
                 $task->markFailed();
                 $task->setFinishedAt(new \DateTimeImmutable());
+                $event = new OutboxEvent(
+                    OutboxEventType::taskFailed->value,
+                    $task->getId(),
+                    [
+                        'task_id' => $task->getId(),
+                        'input' => $task->getInputData(),
+                        'last_error' => $task->getLastError()
+                    ]
+                );
+                $this->outboxEventDatabaseRepository->save($event);
 
                 $this->logger->error("Task {$task->getId()} failed completely!");
                 $this->metricsService->incrementFailed();
@@ -64,6 +89,7 @@ class TaskProcessor
             }
 
             $this->em->flush();
+            $this->em->commit();
         } finally {
             $duration = microtime(true) - $start;
             $this->metricsService->observeDuration($duration);
